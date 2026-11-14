@@ -1,9 +1,12 @@
 import SwiftUI
 
-@main struct MyApp: App {
+@main
+struct LearningApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            NavigationStack {
+                Learning()
+            }
         }
     }
 }
