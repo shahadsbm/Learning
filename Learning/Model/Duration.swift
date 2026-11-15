@@ -19,4 +19,12 @@ enum Duration: String, CaseIterable, Identifiable {
             case .year:  return 96
             }
         }
+    
+    var days: Int {
+        switch self {
+        case .week:  return 7
+        case .month: return 30
+        case .year:  return 365
+        }
+    }
 }

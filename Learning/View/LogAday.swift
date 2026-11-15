@@ -11,36 +11,51 @@ struct LogInDay : View {
     
     
     @State private var viewModel: StartLG
-
+    @Environment(\.scenePhase) private var scenePhase
+    
     init(topic: String, duration: Duration) {
         _viewModel = State(initialValue: StartLG(topic: topic, duration: duration))
     }
-       var body: some View {
-           VStack {
-               topBar
-               dateHeader
-               weekStrip
-               statsRow
-
-               Spacer()
-
-               logArea
-                   .navigationBarBackButtonHidden(true)
-                   .toolbar(.hidden, for: .navigationBar)
-           }
-           .padding(.horizontal, 16)
-       }
-
-       // MARK: - Sections (placeholders for now)
-
+    var body: some View {
+        VStack {
+            topBar
+            dateHeader
+            weekStrip
+            statsRow
+            
+            Spacer()
+            
+            if let result = viewModel.goalResult {
+                   resultArea(for: result)
+                   Spacer()
+            } else {
+                logArea
+            }
+                
+        }
+        .padding(.horizontal, 16)
+        .navigationBarBackButtonHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                viewModel.refreshDate()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
+            viewModel.refreshDate()
+        }
+    }
+    
+    // MARK: - Sections
+    
     private var topBar: some View {
         HStack(spacing: 12) {
             Text("Activity")
                 .font(.largeTitle)
                 .bold()
-
+            
             Spacer()
-
+            
             Button {
                 // later: open the calendar
             } label: {
@@ -49,7 +64,7 @@ struct LogInDay : View {
                     .background(Color.white.opacity(0.1), in: Circle())
             }
             .buttonStyle(.plain)
-
+            
             Button {
                 // later: edit the goal
             } label: {
@@ -62,13 +77,13 @@ struct LogInDay : View {
         .font(.title3)
         .foregroundStyle(.white)
     }
-
+    
     private var dateHeader: some View {
         Text(viewModel.dateText)
             .foregroundStyle(.gray)
             .frame(maxWidth: .infinity, alignment: .leading)
     }
-
+    
     private var weekStrip: some View {
         HStack {
             ForEach(viewModel.weekDays) { day in
@@ -76,14 +91,14 @@ struct LogInDay : View {
             }
         }
     }
-
+    
     private func dayCell(_ day: WeekDay) -> some View {
         VStack(spacing: 8) {
             Text(day.letter)
                 .font(.caption)
                 .bold()
                 .foregroundStyle(.white)
-
+            
             Text("\(day.number)")
                 .font(.title3)
                 .fontWeight(day.isToday ? .bold : .regular)
@@ -93,7 +108,7 @@ struct LogInDay : View {
         }
         .frame(maxWidth: .infinity)
     }
-
+    
     private func numberColor(for day: WeekDay) -> Color {
         switch day.status {
         case .learned: return .orange
@@ -101,7 +116,7 @@ struct LogInDay : View {
         case nil:      return .white
         }
     }
-
+    
     private func circleColor(for day: WeekDay) -> Color {
         switch day.status {
         case .learned: return .orange.opacity(0.2)
@@ -109,7 +124,7 @@ struct LogInDay : View {
         case nil:      return day.isToday ? .orange : .clear
         }
     }
-
+    
     private var statsRow: some View {
         HStack(spacing: 12) {
             statCard(icon: "flame.fill", color: .orange,
@@ -118,7 +133,7 @@ struct LogInDay : View {
                      count: viewModel.frozenCount, label: "Freezed")
         }
     }
-
+    
     private func statCard(icon: String, color: Color, count: Int, label: String) -> some View {
         Button {
             // later: open details
@@ -127,10 +142,10 @@ struct LogInDay : View {
                 Image(systemName: icon)
                     .font(.title2)
                     .foregroundStyle(color)
-
+                
                 Text(count == 1 ? "1 day" : "\(count) days")
                     .font(.headline)
-
+                
                 Text(label)
                     .font(.caption)
             }
@@ -141,40 +156,40 @@ struct LogInDay : View {
         }
         .buttonStyle(.plain)
     }
-
+    
     private let controlWidth: CGFloat = 270
-
+    
     private var logArea: some View {
         VStack(spacing: 12) {
             logButton
                 .padding(.bottom, 36)
-
+            
             freezeButton
-
+            
             Text(viewModel.freezeText)
                 .font(.caption)
                 .foregroundStyle(.gray)
         }
         .padding(.bottom, 16)
     }
-
+    
     private var logButton: some View {
         Button {
             viewModel.logAsLearned()
         } label: {
             Text(viewModel.isTodayLearned ? "Logged as Learned" : "Log as Learned")
                 .font(.headline)
-                .foregroundStyle(viewModel.isTodayLogged ? .gray : .white)
+                .foregroundStyle(viewModel.canLog ? .white : .gray)
                 .frame(width: controlWidth, height: controlWidth)
                 .background(
-                    viewModel.isTodayLogged ? Color.white.opacity(0.1) : Color.orange,
+                    viewModel.canLog ? Color.orange : Color.white.opacity(0.1),
                     in: Circle()
                 )
         }
         .buttonStyle(.plain)
-        .disabled(viewModel.isTodayLogged)
+        .disabled(!viewModel.canLog)
     }
-
+    
     private var freezeButton: some View {
         Button {
             viewModel.freezeToday()
@@ -192,7 +207,35 @@ struct LogInDay : View {
         .disabled(!viewModel.canFreeze)
     }
     
-   }
+    private func resultArea(for result: GoalResult) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: result == .completed ? "hands.sparkles.fill" : "xmark.seal")
+                .font(.system(size: 44))
+                .foregroundStyle(.orange)
+
+            Text(result == .completed ? "Will done!" : "You didn't reach your goal this time.")
+                .font(.headline)
+
+            Text(result == .completed ? "Ready for your next goal?" : "Want to set another goal?")
+                .font(.subheadline)
+                .foregroundStyle(.gray)
+
+            Button {
+                // later: set a new goal
+            } label: {
+                Label("Set a goal", systemImage: "pencil.and.outline")
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                    .background(Color.orange, in: Capsule())
+            }
+            .buttonStyle(.plain)
+            .padding(.top, 48)
+        }
+        .foregroundStyle(.white)
+    }
+    
+}
 
 
 
