@@ -15,6 +15,11 @@ struct LogInDay : View {
     
     init(topic: String, duration: Duration) {
         _viewModel = State(initialValue: StartLG(topic: topic, duration: duration))
+        
+    }
+    
+    init(saved: SavedGoal) {
+        _viewModel = State(initialValue: StartLG(saved: saved))
     }
     var body: some View {
         VStack {
@@ -49,6 +54,10 @@ struct LogInDay : View {
                 viewModel.updateGoal(topic: topic, duration: duration)
             }
         }
+        .navigationDestination(isPresented: $viewModel.isShowingCalendar) {
+            ActivitiesView(entries: viewModel.entries, today: viewModel.now)
+        }
+        .onAppear { viewModel.save() }
     }
     
     // MARK: - Sections
@@ -62,7 +71,7 @@ struct LogInDay : View {
             Spacer()
             
             Button {
-                // later: open the calendar
+                viewModel.openCalendar()
             } label: {
                 Image(systemName: "calendar")
                     .frame(width: 44, height: 44)
@@ -248,6 +257,8 @@ struct LogInDay : View {
 
 
 #Preview {
-    LogInDay(topic: "Swift", duration: .week)
+    NavigationStack{
+        LogInDay(topic: "Swift", duration: .week)
+    }
 }
 

@@ -7,13 +7,13 @@
 
 import Foundation
 
-enum DayStatus {
+enum DayStatus: Codable {
     case learned
     case frozen
 }
 
-struct DayEntry: Identifiable {
-    let id = UUID()
+struct DayEntry: Identifiable, Codable {
+    var id = UUID() //chnge from let to var to be saved and restored
     let date: Date
     let status: DayStatus
 }

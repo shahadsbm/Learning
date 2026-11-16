@@ -5,7 +5,7 @@
 //  Created by Shahad Almashjari on 12/11/2026.
 //
 
-enum Duration: String, CaseIterable, Identifiable {
+enum Duration: String, CaseIterable, Identifiable, Codable{
     case week = "Week"
     case month = "Month"
     case year = "Year"

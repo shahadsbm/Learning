@@ -15,10 +15,10 @@ class StartLG {
     var entries: [DayEntry] = []
     var topic: String = ""
     var duration: Duration = .week
-    var goalStartDate: Date         // renamed from streakStartDate
-    var now: Date = Date()                          // NEW: the app's "current time"
+    var goalStartDate: Date
+    var now: Date = Date()
     var isEditingGoal = false
-
+    var isShowingCalendar = false
 
     init(topic: String, duration: Duration) {
         let start = Date()
@@ -26,35 +26,21 @@ class StartLG {
         self.duration = duration
         self.now = start
         self.goalStartDate = start
-        
     }
 
-    private let maxGap: TimeInterval = 32 * 60 * 60   // 32 hours in seconds
+    init(saved: SavedGoal) {
+        self.topic = saved.topic
+        self.duration = saved.duration
+        self.goalStartDate = saved.goalStartDate
+        self.entries = saved.entries
+    }
+
     private let calendar = Calendar.current
+    private let store = GoalStore()
 
     // MARK: - Computed (worked out from the facts)
     var freezeLimit: Int {
         duration.freezeLimit
-    }
-
-    private var streakEntries: [DayEntry] {
-        let relevant = entries
-            .filter { $0.date >= goalStartDate }
-            .sorted { $0.date > $1.date }
-
-        guard let latest = relevant.first,
-              now.timeIntervalSince(latest.date) <= maxGap else { return [] }
-
-        var result = [latest]
-        for (newer, older) in zip(relevant, relevant.dropFirst()) {
-            guard newer.date.timeIntervalSince(older.date) <= maxGap else { break }
-            result.append(older)
-        }
-        return result
-    }
-
-    var streak: Int {
-        streakEntries.count
     }
 
     var learnedCount: Int {
@@ -69,14 +55,10 @@ class StartLG {
         "\(frozenCount) out of \(freezeLimit) Freezes used"
     }
 
-    private var todayEntry: DayEntry? {             // NEW: the one shared check
+    private var todayEntry: DayEntry? {
         entries.last {
             calendar.isDate($0.date, inSameDayAs: now) && $0.date >= goalStartDate
         }
-    }
-
-    var isTodayLogged: Bool {
-        todayEntry != nil
     }
 
     var isTodayFrozen: Bool {
@@ -100,7 +82,7 @@ class StartLG {
     var canLog: Bool {
         !isGoalFinished && !isTodayLearned
     }
-    
+
     private var goalEndDate: Date {
         let firstDay = calendar.startOfDay(for: goalStartDate)
         return calendar.date(byAdding: .day, value: duration.days, to: firstDay) ?? .distantFuture
@@ -125,13 +107,13 @@ class StartLG {
 
     // MARK: - Actions
     func logAsLearned() {
-        refreshDate()                               // NEW
+        refreshDate()
         guard canLog else { return }
         setToday(.learned)
     }
 
     func freezeToday() {
-        refreshDate()                               // NEW
+        refreshDate()
         guard canFreeze else { return }
         setToday(.frozen)
     }
@@ -140,28 +122,35 @@ class StartLG {
         refreshDate()
         self.topic = topic
         self.duration = duration
-        goalStartDate = now                  // counts and streak start over
+        goalStartDate = now                  // counts start over
         isEditingGoal = false                // closes the edit screen
+        save()
     }
 
-    func refreshDate() {                            // NEW
+    func refreshDate() {
         now = Date()
     }
-    
+
     func editGoal() {
         isEditingGoal = true
     }
 
-    // MARK: - Helper
-    private func entry(for date: Date) -> DayEntry? {
-        entries.first { calendar.isDate($0.date, inSameDayAs: date) }
+    func openCalendar() {
+        isShowingCalendar = true
     }
 
+    func save() {
+        store.save(SavedGoal(topic: topic, duration: duration,
+                             goalStartDate: goalStartDate, entries: entries))
+    }
+
+    // MARK: - Helper
     private func setToday(_ status: DayStatus) {
         entries.removeAll {
             calendar.isDate($0.date, inSameDayAs: now) && $0.date >= goalStartDate
         }
         entries.append(DayEntry(date: now, status: status))
+        save()
     }
 
     var weekDays: [WeekDay] {
@@ -184,7 +173,7 @@ class StartLG {
                 letter: cal.veryShortWeekdaySymbols[cal.component(.weekday, from: date) - 1],
                 number: cal.component(.day, from: date),
                 status: status,
-                isToday: cal.isDate(date, inSameDayAs: now)   // CHANGED
+                isToday: cal.isDate(date, inSameDayAs: now)
             )
         }
     }
