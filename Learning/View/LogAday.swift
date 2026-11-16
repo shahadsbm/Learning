@@ -44,6 +44,11 @@ struct LogInDay : View {
         .onReceive(NotificationCenter.default.publisher(for: .NSCalendarDayChanged)) { _ in
             viewModel.refreshDate()
         }
+        .navigationDestination(isPresented: $viewModel.isEditingGoal) {
+            EditGoalView(topic: viewModel.topic, duration: viewModel.duration) { topic, duration in
+                viewModel.updateGoal(topic: topic, duration: duration)
+            }
+        }
     }
     
     // MARK: - Sections
@@ -66,7 +71,7 @@ struct LogInDay : View {
             .buttonStyle(.plain)
             
             Button {
-                // later: edit the goal
+                viewModel.editGoal()
             } label: {
                 Image(systemName: "pencil.and.outline")
                     .frame(width: 44, height: 44)
@@ -221,16 +226,19 @@ struct LogInDay : View {
                 .foregroundStyle(.gray)
 
             Button {
-                // later: set a new goal
+                viewModel.editGoal()
             } label: {
                 Label("Set a goal", systemImage: "pencil.and.outline")
                     .foregroundStyle(.white)
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
                     .background(Color.orange, in: Capsule())
+                
             }
             .buttonStyle(.plain)
             .padding(.top, 48)
+            
+            
         }
         .foregroundStyle(.white)
     }

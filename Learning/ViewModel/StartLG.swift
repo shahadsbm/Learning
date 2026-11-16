@@ -17,6 +17,8 @@ class StartLG {
     var duration: Duration = .week
     var goalStartDate: Date         // renamed from streakStartDate
     var now: Date = Date()                          // NEW: the app's "current time"
+    var isEditingGoal = false
+
 
     init(topic: String, duration: Duration) {
         let start = Date()
@@ -135,14 +137,19 @@ class StartLG {
     }
 
     func updateGoal(topic: String, duration: Duration) {
+        refreshDate()
         self.topic = topic
         self.duration = duration
-        refreshDate()
-        goalStartDate = now                         // goal changed: counts and streak start over
+        goalStartDate = now                  // counts and streak start over
+        isEditingGoal = false                // closes the edit screen
     }
 
     func refreshDate() {                            // NEW
         now = Date()
+    }
+    
+    func editGoal() {
+        isEditingGoal = true
     }
 
     // MARK: - Helper
