@@ -5,12 +5,10 @@
 //  Created by Shahad Almashjari on 12/11/2026.
 //
 
-enum Duration: String, CaseIterable, Identifiable, Codable{
+enum Duration: String, CaseIterable, Codable{
     case week = "Week"
     case month = "Month"
     case year = "Year"
-
-    var id: String { rawValue }
    
     var freezeLimit: Int {
             switch self {

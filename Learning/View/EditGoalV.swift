@@ -20,8 +20,8 @@ struct EditGoalView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             topBar
-            topicField
-            durationPicker
+            TopicField(topic: $viewModel.topic)
+            DurationPicker(selection: $viewModel.duration)
 
             Spacer()
         }
@@ -69,38 +69,6 @@ struct EditGoalView: View {
             }
         }
         .foregroundStyle(.white)
-    }
-
-    private var topicField: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("I want to learn")
-
-            TextField("Enter a goal", text: $viewModel.topic)
-
-            Divider()
-        }
-    }
-
-    private var durationPicker: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("I want to learn it in a")
-
-            HStack(spacing: 12) {
-                ForEach(Duration.allCases, id: \.self) { item in
-                    Button(item.rawValue) {
-                        viewModel.duration = item
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .foregroundStyle(viewModel.duration == item ? .white : .gray)
-                    .background(
-                        viewModel.duration == item ? Color.orange : Color.white.opacity(0.1),
-                        in: Capsule()
-                    )
-                }
-            }
-        }
     }
 }
 

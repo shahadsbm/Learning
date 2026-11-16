@@ -57,7 +57,7 @@ struct LogInDay : View {
         .navigationDestination(isPresented: $viewModel.isShowingCalendar) {
             ActivitiesView(entries: viewModel.entries, today: viewModel.now)
         }
-        .onAppear { viewModel.save() }
+        
     }
     
     // MARK: - Sections
@@ -112,31 +112,10 @@ struct LogInDay : View {
                 .font(.caption)
                 .bold()
                 .foregroundStyle(.white)
-            
-            Text("\(day.number)")
-                .font(.title3)
-                .fontWeight(day.isToday ? .bold : .regular)
-                .frame(width: 44, height: 44)
-                .foregroundStyle(numberColor(for: day))
-                .background(circleColor(for: day), in: Circle())
+
+            DayCircle(number: day.number, status: day.status, isToday: day.isToday)
         }
         .frame(maxWidth: .infinity)
-    }
-    
-    private func numberColor(for day: WeekDay) -> Color {
-        switch day.status {
-        case .learned: return .orange
-        case .frozen:  return .cyan
-        case nil:      return .white
-        }
-    }
-    
-    private func circleColor(for day: WeekDay) -> Color {
-        switch day.status {
-        case .learned: return .orange.opacity(0.2)
-        case .frozen:  return .cyan.opacity(0.2)
-        case nil:      return day.isToday ? .orange : .clear
-        }
     }
     
     private var statsRow: some View {

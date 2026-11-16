@@ -19,6 +19,8 @@ class StartLG {
     var now: Date = Date()
     var isEditingGoal = false
     var isShowingCalendar = false
+    private let calendar = Calendar.current
+    private let store = GoalStore()
 
     init(topic: String, duration: Duration) {
         let start = Date()
@@ -35,8 +37,6 @@ class StartLG {
         self.entries = saved.entries
     }
 
-    private let calendar = Calendar.current
-    private let store = GoalStore()
 
     // MARK: - Computed (worked out from the facts)
     var freezeLimit: Int {
