@@ -18,7 +18,7 @@ struct CalendarDay: Identifiable {
 
 struct CalendarMonth: Identifiable {
     let start: Date
-    let title: String            // "January 2026"
+    let title: String            
     let leadingBlanks: Int       // empty cells before the 1st
     let days: [CalendarDay]
 
