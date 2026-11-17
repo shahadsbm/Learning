@@ -206,7 +206,7 @@ struct LogInDay : View {
                 .font(.system(size: 44))
                 .foregroundStyle(.orange)
 
-            Text(result == .completed ? "Will done!" : "You didn't reach your goal this time.")
+            Text(result == .completed ? "Well done!" : "You didn't reach your goal this time.")
                 .font(.headline)
 
             Text(result == .completed ? "Ready for your next goal?" : "Want to set another goal?")
