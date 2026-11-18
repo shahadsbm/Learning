@@ -21,6 +21,7 @@ class StartLG {
     var isShowingCalendar = false
     private let calendar = Calendar.current
     private let store = GoalStore()
+    private let maxGap: TimeInterval = 32 * 60 * 60   // 32 hours
 
     init(topic: String, duration: Duration) {
         let start = Date()
@@ -49,6 +50,30 @@ class StartLG {
 
     var frozenCount: Int {
         entries.filter { $0.status == .frozen && $0.date >= goalStartDate }.count
+    }
+    
+    private var streakEntries: [DayEntry] {
+        let relevant = entries
+            .filter { $0.date >= goalStartDate }
+            .sorted { $0.date > $1.date }
+
+        guard let latest = relevant.first,
+              now.timeIntervalSince(latest.date) <= maxGap else { return [] }
+
+        var result = [latest]
+        for (newer, older) in zip(relevant, relevant.dropFirst()) {
+            guard newer.date.timeIntervalSince(older.date) <= maxGap else { break }
+            result.append(older)
+        }
+        return result
+    }
+
+    var streak: Int {
+        streakEntries.count
+    }
+
+    var streakText: String {
+        streak == 1 ? "1 day streak" : "\(streak) day streak"
     }
 
     var freezeText: String {

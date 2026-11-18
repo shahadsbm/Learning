@@ -93,9 +93,29 @@ struct LogInDay : View {
     }
     
     private var dateHeader: some View {
-        Text(viewModel.dateText)
-            .foregroundStyle(.gray)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        HStack {
+            Text(viewModel.dateText)
+                .foregroundStyle(.gray)
+
+            Spacer()
+
+            if viewModel.streak > 0 {
+                streakBadge
+            }
+        }
+    }
+
+    private var streakBadge: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "flame.fill")
+            Text(viewModel.streakText)
+        }
+        .font(.caption)
+        .bold()
+        .foregroundStyle(.orange)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(Color.orange.opacity(0.2), in: Capsule())
     }
     
     private var weekStrip: some View {
